@@ -30,8 +30,11 @@ int main(int argc, const char* argv[]){
 	pid_t medianPid;
 	pid_t modePid;
 	meanPid = fork();
-	medianPid = fork();	
-	modePid = fork();
+	
+	float meanRead; 
+	float medianRead;
+	float modeRead; 	
+
 	if(meanPid == 0)
 	{		
 		close(meanfd[1]);
@@ -46,14 +49,12 @@ int main(int argc, const char* argv[]){
         write(meanfd[1], &sid, sizeof(sid));
 		wait(NULL);
         double *data = (double *) shmat(sid, NULL, 0);
-        printf("%f\n" , data[0]);
+        meanRead = data[0];
         shmctl(sid, IPC_RMID, NULL);
 
 		
 
 		printf("Initiator: Forked process ID %d.\n", meanPid);
-		printf("Initiator: waiting for process [%d].\n", meanPid);
-		waitpid(meanPid, &status, 0 );
 		//printf("Initiator: child process %d returned with %d.\n", meanPid, meanEs);
 	}
 
@@ -63,8 +64,12 @@ int main(int argc, const char* argv[]){
     /*char medianStfd[20];
 	int medianfd[2];
 	pipe(medianfd);
-
+	
 	pid_t medianPid = fork();*/
+	if(meanPid > 0){
+		medianPid = fork();
+	}
+	
 	if(medianPid == 0)
 	{
 		close(medianfd[1]);
@@ -80,14 +85,13 @@ int main(int argc, const char* argv[]){
         write(medianfd[1], &sid, sizeof(sid));
 		wait(NULL);
         double *data = (double *) shmat(sid, NULL, 0);
-        printf("%f\n" , data[0]);
+        medianRead = data[0];
         shmctl(sid, IPC_RMID, NULL);
 		
 		
 		//Normal Stuff
 		printf("Initiator: Forked process ID %d.\n", medianPid);
-		printf("Initiator: waiting for process [%d].\n", medianPid);
-		waitpid(medianPid, &status, 0 );	
+		
 		//printf("Initiator: child process %d returned with %d.\n", medianPid, medianEs);
 	}
 
@@ -98,6 +102,10 @@ int main(int argc, const char* argv[]){
 	pipe(modefd);
 
 	pid_t modePid = fork();*/
+
+	if(meanPid > 0 && medianPid > 0){
+		modePid = fork();
+	}
 	if(modePid == 0)
 	{
 		close(modefd[1]);
@@ -113,7 +121,7 @@ int main(int argc, const char* argv[]){
         write(modefd[1], &sid, sizeof(sid));
 		wait(NULL);
         double *data = (double *) shmat(sid, NULL, 0);
-        printf("%f\n" , data[0]);
+        modeRead = data[0];
         shmctl(sid, IPC_RMID, NULL);		
 
 		//Normal Stuff
@@ -122,6 +130,19 @@ int main(int argc, const char* argv[]){
 		waitpid(modePid, &status, 0 );
 		//printf("Initiator: child process %d returned with %d.\n", modePid, modeEs);
 	}	
+	
+	//WAIT
+	printf("Initiator: waiting for process [%d].\n", meanPid);
+	waitpid(meanPid, &status, 0 );
+	printf("Initiator: waiting for process [%d].\n", medianPid);
+	waitpid(medianPid, &status, 0 );
+	printf("Initiator: waiting for process [%d].\n", modePid);
+	waitpid(modePid, &status, 0 );
+	printf("Initiator: Result read from shared memory , Mean is %f\n", meanRead);
+	printf("Initiator: Result read from shared memory , Median is %f\n", medianRead);
+	printf("Initiator: Result read from shared memory , Mode is %f\n", modeRead);
+	printf("Initiator: exiting.\n");	
+
 
 	return 0;
 }
