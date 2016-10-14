@@ -43,7 +43,11 @@ int main(int argc, const char* argv[]){
 	}
 	if(meanPid > 0)
 	{
-     	int sid = shmget(IPC_PRIVATE, sizeof(double), IPC_CREAT | 0666);		
+		printf("Initiator: Forked process ID %d.\n", meanPid);
+		    	
+
+		int sid = shmget(IPC_PRIVATE, sizeof(double), IPC_CREAT | 0666);
+		printf("Initiator: wrote shm ID %d to pipe (%d bytes)\n", sid, sizeof(sid)); 		
 		char stid[20];
         sprintf(stid, "%d", sid);
         write(meanfd[1], &sid, sizeof(sid));
@@ -51,21 +55,8 @@ int main(int argc, const char* argv[]){
         double *data = (double *) shmat(sid, NULL, 0);
         meanRead = data[0];
         shmctl(sid, IPC_RMID, NULL);
-
-		
-
-		printf("Initiator: Forked process ID %d.\n", meanPid);
-		//printf("Initiator: child process %d returned with %d.\n", meanPid, meanEs);
 	}
-
-	
 	//////////////////////////////////////////////Fork For Median/////////////////////////////////////////////////	
-	// Create Pipe for child
-    /*char medianStfd[20];
-	int medianfd[2];
-	pipe(medianfd);
-	
-	pid_t medianPid = fork();*/
 	if(meanPid > 0){
 		medianPid = fork();
 	}
@@ -78,8 +69,11 @@ int main(int argc, const char* argv[]){
 	}
 	if(medianPid > 0)
 	{
+		printf("Initiator: Forked process ID %d.\n", medianPid);		
+	
 		//Pipe stuff
-		int sid = shmget(IPC_PRIVATE, sizeof(double), IPC_CREAT | 0666);		
+		int sid = shmget(IPC_PRIVATE, sizeof(double), IPC_CREAT | 0666);
+	    printf("Initiator: wrote shm ID %d to pipe (%d bytes)\n", sid, sizeof(sid));		
 		char stid[20];
         sprintf(stid, "%d", sid);
         write(medianfd[1], &sid, sizeof(sid));
@@ -87,22 +81,10 @@ int main(int argc, const char* argv[]){
         double *data = (double *) shmat(sid, NULL, 0);
         medianRead = data[0];
         shmctl(sid, IPC_RMID, NULL);
-		
-		
-		//Normal Stuff
-		printf("Initiator: Forked process ID %d.\n", medianPid);
-		
-		//printf("Initiator: child process %d returned with %d.\n", medianPid, medianEs);
 	}
 
 	
 	/////////////////////////////////////Fork For Mode//////////////////////////////////////////////////////////
-	/*char modeStfd[20];
-	int modefd[2];
-	pipe(modefd);
-
-	pid_t modePid = fork();*/
-
 	if(meanPid > 0 && medianPid > 0){
 		modePid = fork();
 	}
@@ -114,8 +96,11 @@ int main(int argc, const char* argv[]){
 	}
 	if(modePid > 0)
 	{
+		printf("Initiator: Forked process ID %d.\n", modePid);	
+
 		//Pipe stuff
-		int sid = shmget(IPC_PRIVATE, sizeof(double), IPC_CREAT | 0666);		
+		int sid = shmget(IPC_PRIVATE, sizeof(double), IPC_CREAT | 0666);	
+    	printf("Initiator: wrote shm ID %d to pipe (%d bytes)\n", sid, sizeof(sid));		
 		char stid[20];
         sprintf(stid, "%d", sid);
         write(modefd[1], &sid, sizeof(sid));
@@ -123,12 +108,6 @@ int main(int argc, const char* argv[]){
         double *data = (double *) shmat(sid, NULL, 0);
         modeRead = data[0];
         shmctl(sid, IPC_RMID, NULL);		
-
-		//Normal Stuff
-		printf("Initiator: Forked process ID %d.\n", modePid);
-		printf("Initiator: waiting for process [%d].\n", modePid);
-		waitpid(modePid, &status, 0 );
-		//printf("Initiator: child process %d returned with %d.\n", modePid, modeEs);
 	}	
 	
 	//WAIT

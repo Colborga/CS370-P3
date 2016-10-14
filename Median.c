@@ -72,9 +72,8 @@ int main(int argc, const char* argv[]){
 	pid_t parentPid = atoi(argv[2]);
 	int readBuffer;
 	read(parentPid, &readBuffer, sizeof(readBuffer));
-    printf("Initiator: wrote shm ID %d to pipe (4 bytes)\n", readBuffer);
     double *data = shmat(readBuffer, NULL, 0);
-	printf("Median Process [%d]: Starting.\n", parentPid);
+	printf("Median Process [%d]: Starting.\n", getpid());
 	
 	int A[10];
 	FILE *fp = fopen(argv[1], "r");
@@ -92,8 +91,8 @@ int main(int argc, const char* argv[]){
 	int n = sizeof(A) / sizeof(A[0]);
 	float result = calcMedian(A,n);
 	data[0] = result;
-	printf("Median: Process [%d]:  Median is %f.\n", parentPid, median);	
-	printf("Median: Process [%d]: Stopping.\n", parentPid);	
+	printf("Median: Process [%d]:  Median is %f.\n", getpid(), median);	
+	printf("Median: Process [%d]: Stopping.\n", getpid());	
 	//printf("%f\n", result);
 
 	return 0;

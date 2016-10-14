@@ -81,9 +81,8 @@ int main(int argc, const char* argv[]){
 	pid_t parentPid = atoi(argv[2]);
 	int readBuffer;
 	read(parentPid, &readBuffer, sizeof(readBuffer));
-    printf("Initiator: wrote shm ID %d to pipe (4 bytes)\n", readBuffer);
     double *data = shmat(readBuffer, NULL, 0);
-	printf("Mode Process [%d]: Starting.\n", parentPid);		
+	printf("Mode Process [%d]: Starting.\n", getpid());		
 
 	int A[10];
 	FILE *fp = fopen(argv[1], "r");
@@ -101,8 +100,8 @@ int main(int argc, const char* argv[]){
 	int n = sizeof(A) / sizeof(A[0]);
 	float result = calcMode(A,n);
 	data[0] = result;
-	printf("Mode: Process [%d]:  Mode is %d.\n", parentPid, mode);	
-	printf("Mode: Process [%d]: Stopping.\n", parentPid);	
+	printf("Mode: Process [%d]:  Mode is %d.\n", getpid(), mode);	
+	printf("Mode: Process [%d]: Stopping.\n", getpid());	
 
 	
 	return result;
